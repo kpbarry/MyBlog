@@ -6,6 +6,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using MyBlog.Models;
+using System.IO;
 
 namespace MyBlog.Controllers
 {
@@ -49,10 +50,23 @@ namespace MyBlog.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Post post)
+        public ActionResult Create(Post post, HttpPostedFileBase Image)
         {
             if (ModelState.IsValid)
             {
+                if (Image != null)
+                {
+                    // Save the image to our site
+                    string filename = Guid.NewGuid().ToString().Substring(0, 6) + Image.FileName;
+                    // Specify the path to save the file to
+                    string path = Path.Combine(Server.MapPath("~/content/"), filename);
+                    // Save the file
+                    Image.SaveAs(path);
+                    // Update registration object with the Image
+                    post.ImageUrl = "/content/" + filename;
+                }
+                post.DateCreated = DateTime.Now;
+                post.Likes = 0;
                 db.Posts.Add(post);
                 db.SaveChanges();
                 return RedirectToAction("Index");
@@ -81,10 +95,22 @@ namespace MyBlog.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(Post post)
+        public ActionResult Edit(Post post, HttpPostedFileBase Image)
         {
             if (ModelState.IsValid)
             {
+                if (Image != null)
+                {
+                    // Save the image to our site
+                    string filename = Guid.NewGuid().ToString().Substring(0, 6) + Image.FileName;
+                    // Specify the path to save the file to
+                    string path = Path.Combine(Server.MapPath("~/content/"), filename);
+                    // Save the file
+                    Image.SaveAs(path);
+                    // Update registration object with the Image
+                    post.ImageUrl = "/content/" + filename;
+                }
+                post.DateCreated = DateTime.Now;
                 db.Entry(post).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
